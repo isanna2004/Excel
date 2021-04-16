@@ -34,10 +34,11 @@ function App() {
     "AB",
     "AC",
   ];
-  const [Change, setChange] = useState(false);
+  const [data, setData] = useState({});
   const FONT_STYLE = [{ Ж: "bold" }, { K: "italic" }, { Ч: "underline" }];
-  const [style, setStyle] = useState([]);
-console.log(style)
+  const [arr, setArr] = useState(false);
+  const [active, setActive] = useState([]);
+
   return (
     <div className="App">
       <div className="btn-group">
@@ -47,9 +48,23 @@ console.log(style)
               className="btn-light"
               onClick={(e) => {
                 e.currentTarget.classList.toggle("active");
-                e.currentTarget.classList.contains("active")
-                  ? setStyle(style.concat(btn[name]))
-                  : setStyle(style.slice(0, style.indexOf(btn[name])));
+                const isActiveStyle = e.currentTarget.classList.contains(
+                  "active"
+                );
+                if (!active) return;
+                const td = data[active] || {
+                  value: "",
+                  textStyles: [],
+                };
+                setData({
+                  ...data,
+                  [active]: {
+                    ...td,
+                    textStyles: isActiveStyle
+                      ? [td.textStyles.join(" ")].concat(btn[name])
+                      : [],
+                  },
+                });
               }}
             >
               <b>{name}</b>
@@ -57,7 +72,7 @@ console.log(style)
           ))
         )}
       </div>
-      <div className="table">
+      <div className="table" onFocus={(e) => setActive(e.target.classList[1])}>
         <table className="table">
           <thead>
             <tr>
@@ -72,19 +87,22 @@ console.log(style)
                 <th className="numbers p-0" style={{ width: "10px" }}>
                   {number}
                 </th>
-                {[...Array(29).keys()].map((cell, id) => (
-                  <td
-                    className="cell"
-                    key={cell.id}
-                    contenteditable="true"
-                    onClick={(e) => {
-                      let value = e.currentTarget.textContent;
-                      style.map((name) =>
-                        e.currentTarget.classList.add(`${name}`)
-                      );
-                    }}
-                  ></td>
-                ))}
+                {[...Array(29).keys()].map((cell, id) => {
+                  const tdId = `${number}:${id}`;
+                  const tdData = data[tdId];
+                  const textStyles = tdData ? tdData.textStyles : [];
+
+                  return (
+                    <td
+                      className={`cell ${tdId} ${textStyles.join(" ")}  `}
+                      key={cell.id}
+                      contentEditable="true"
+                      onClick={(e) => {
+                        let value = e.currentTarget.textContent;
+                      }}
+                    ></td>
+                  );
+                })}
               </tr>
             ))}
           </tbody>
